@@ -5,7 +5,9 @@ pragma solidity ^0.4.13;
 // coin/token contracts. If you want to create a standards-compliant
 // token, see: https://github.com/ConsenSys/Tokens. Cheers!
 
-contract MetaCoin {
+import "./ERC223/ERC223BasicToken.sol";
+
+contract MetaCoin is ERC223BasicToken {
 	mapping (address => uint) balances;
 
 	event Transfer(address indexed _from, address indexed _to, uint256 _value);
