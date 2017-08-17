@@ -3,9 +3,21 @@ pragma solidity ^0.4.13;
 contract Voting {
     
     enum Role { OWNER, COMPANY, RESIDENT}
-    enum State { INITIAL, OPEN, CLOSED }
+    enum State { INITIAL, FUNDED, OPEN, APPROVED, CLOSED }
     
     mapping (address => Role) roles;
+    State public state;
+    
+    event Funded(address addr, uint amount);
+    event VotingOpened();
+    event Approved(address addr);
+    event VotingClosedSuccess();
+    //event VotingClosedFailure();
+    event Withdrawn(address addr, uint amount);
+    
+    mapping (address => bool) approved;
+    uint numApproved;   // number of residents who approved
+    uint threshold;     // required support in persent (1 to 100)
 
 	// Addresses generated from seed.txt
     address[] private testAddresses;
@@ -41,14 +53,47 @@ contract Voting {
 		}
 	}
 	
-	function MetaCoin(bool isRpc) {
+	function Voting(bool isRpc) {
 	    assignTestAddresses(isRpc);
 	    assignRoles();
+	    state = State.INITIAL;
 	}
 	
-	function getMyRole() constant returns (uint) {
-	    return uint(roles[msg.sender]);
+	function fund() payable {
+	    require(roles[msg.sender] == Role.OWNER);
+	    require(state == State.INITIAL);
+	    state = State.FUNDED;
+	    Funded(msg.sender, msg.value);
 	}
-
+	
+	// TODO: add deadline
+	function startVoting(uint _threshold) {
+	    require(roles[msg.sender] == Role.OWNER);
+	    require(_threshold > 0 && _threshold <= 100);
+	    require(state == State.FUNDED);
+	    state = State.OPEN;
+	    VotingOpened();
+	}
+	
+	function approve() {
+	    require(roles[msg.sender] == Role.RESIDENT);
+	    require(state == State.OPEN);
+	    approved[msg.sender] = true;
+	    numApproved += 1;
+	    Approved(msg.sender);
+	    if (numApproved > threshold * testAddresses.length) {
+	        state = State.APPROVED;
+	        VotingClosedSuccess();
+	    }
+	}
+	
+	function withdraw() {
+	    require(roles[msg.sender] == Role.COMPANY);
+	    require(state == State.APPROVED);
+	    msg.sender.transfer(this.balance);
+	    state = State.CLOSED;
+	    Withdrawn(msg.sender, this.balance);
+	}
+    
 
 }
