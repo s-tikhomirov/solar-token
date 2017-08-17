@@ -24,6 +24,7 @@ contract Voting {
     uint numApproved;   // number of residents who approved
     uint threshold;     // required support in persent (1 to 100)
     uint firstWithdrawalShare = 50;     // share that company withdraws before installation
+    uint thresholdPercent = 51;         // required approval
     uint votingDeadline;
     uint defaultVotingDuration = 1 minutes;
     uint installationDeadline;
@@ -84,12 +85,11 @@ contract Voting {
 	    withdraw(_amount);
 	}
 	
-	function startVoting(uint _thresholdPercent) {
+	function startVoting() {
 	    require(roles[msg.sender] == Role.OWNER);
-	    require(_thresholdPercent > 0 && _thresholdPercent <= 100);
 	    require(state == State.FUNDED);
 	    votingDeadline = now + defaultVotingDuration;
-	    threshold = (_thresholdPercent * (testAddresses.length - numRoles + 1) / 100);
+	    threshold = (thresholdPercent * (testAddresses.length - numRoles + 1) / 100);
 	    state = State.OPEN;
 	    VotingOpened(threshold);
 	}
