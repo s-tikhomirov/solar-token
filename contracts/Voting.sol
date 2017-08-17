@@ -3,7 +3,7 @@ pragma solidity ^0.4.13;
 contract Voting {
     
     enum Role { OWNER, COMPANY, RESIDENT, AUDITOR }
-    enum State { INITIAL, FUNDED, OPEN, APPROVED, INSTALLIING, AUDITED, CLOSED, FAILED }
+    enum State { INITIAL, FUNDED, OPEN, APPROVED, INSTALLING, AUDITED, CLOSED, FAILED }
     
     mapping (address => Role) roles;
     State public state;
@@ -12,9 +12,10 @@ contract Voting {
     event VotingOpened(uint threshold);
     event Approved(address addr, uint total);
     event VotingClosedSuccess(uint total);
-    event VotingClosedFailure();
+    event VotingFailed();
     event Withdrawn(address addr, uint amount);
     event Audited();
+    event InstallationFailed();
     event Closed();
     
     mapping (address => bool) approved;
@@ -25,6 +26,8 @@ contract Voting {
     uint firstWithdrawalShare = 50;     // share that company withdraws before installation
     uint votingDeadline;
     uint defaultVotingDuration = 1 minutes;
+    uint installationDeadline;
+    uint defaultInstallationDuration = 1 minutes;
 
 	// Addresses generated from seed.txt
     address[] private testAddresses;
@@ -74,6 +77,13 @@ contract Voting {
 	    Funded(msg.sender, msg.value);
 	}
 	
+	// owner can deposit and withdraw ether before voting starts
+	function withdrawBeforeVoting(uint _amount) {
+	    require(state == State.FUNDED);
+	    require(roles[msg.sender] == Role.OWNER);
+	    withdraw(_amount);
+	}
+	
 	function startVoting(uint _thresholdPercent) {
 	    require(roles[msg.sender] == Role.OWNER);
 	    require(_thresholdPercent > 0 && _thresholdPercent <= 100);
@@ -93,6 +103,7 @@ contract Voting {
 	    Approved(msg.sender, numApproved);
 	    if (numApproved >= threshold) {
 	        state = State.APPROVED;
+	        installationDeadline = now + defaultInstallationDuration;
 	        VotingClosedSuccess(numApproved);
 	    }
 	}
@@ -102,27 +113,36 @@ contract Voting {
 	    require(state == State.OPEN);      // but voting still "opened"
 	    require(roles[msg.sender] == Role.OWNER);
 	    state = State.FAILED;
-	    VotingClosedFailure();
+	    VotingFailed();
+	    withdraw(this.balance);
+	}
+	
+	function closeFailedInstallationAndWithdraw() {
+	    require(now >= installationDeadline);   // installation deadline passed
+	    require(state == State.APPROVED || state == State.INSTALLING);      // but nothing was installed
+	    require(roles[msg.sender] == Role.OWNER);
+	    state = State.FAILED;
+	    InstallationFailed();
 	    withdraw(this.balance);
 	}
 	
 	function withdraw(uint amount) internal {
-	    require(now >= votingDeadline);
 	    msg.sender.transfer(amount);
 	    Withdrawn(msg.sender, amount);
 	}
 	
 	function withdrawFirst() {
+	    require(now < installationDeadline);
 	    require(roles[msg.sender] == Role.COMPANY);
 	    require(state == State.APPROVED);
 	    withdraw(this.balance * firstWithdrawalShare / 100);
-	    state = State.INSTALLIING;
+	    state = State.INSTALLING;
 	}
 	
 	function auditConfirm() {
-	    require(now >= votingDeadline);
+	    require(now < installationDeadline);
 	    require(roles[msg.sender] == Role.AUDITOR);
-	    require(state == State.INSTALLIING);
+	    require(state == State.INSTALLING);
 	    state = State.AUDITED;
 	    Audited();
 	}
@@ -133,6 +153,13 @@ contract Voting {
 	    withdraw(this.balance);
 	    state = State.CLOSED;
 	    Closed();
+	}
+	
+	
+	//// HELPERS ////
+	
+	function getState() constant returns (uint) {
+	    return uint(state);
 	}
     
 
