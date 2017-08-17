@@ -2,22 +2,25 @@ pragma solidity ^0.4.13;
 
 contract Voting {
     
-    enum Role { OWNER, COMPANY, RESIDENT}
-    enum State { INITIAL, FUNDED, OPEN, APPROVED, CLOSED }
+    enum Role { OWNER, COMPANY, RESIDENT, AUDITOR }
+    enum State { INITIAL, FUNDED, OPEN, APPROVED, INSTALLIING, AUDITED, CLOSED }
     
     mapping (address => Role) roles;
     State public state;
     
     event Funded(address addr, uint amount);
-    event VotingOpened();
-    event Approved(address addr);
-    event VotingClosedSuccess();
+    event VotingOpened(uint threshold);
+    event Approved(address addr, uint total);
+    event VotingClosedSuccess(uint total);
     //event VotingClosedFailure();
     event Withdrawn(address addr, uint amount);
+    event Audited();
+    event Closed();
     
     mapping (address => bool) approved;
     uint numApproved;   // number of residents who approved
     uint threshold;     // required support in persent (1 to 100)
+    uint firtWithdrawalShare = 50;     // share that company withdraws before installation
 
 	// Addresses generated from seed.txt
     address[] private testAddresses;
@@ -45,10 +48,11 @@ contract Voting {
     
 	function assignRoles() internal {
 	    require(msg.sender == testAddresses[0]);
-	    require(testAddresses.length > 2);
+	    require(testAddresses.length > 3);
 		roles[testAddresses[0]] = Role.OWNER;
 		roles[testAddresses[1]] = Role.COMPANY;
-		for (uint8 i = 2; i < testAddresses.length; i++) {
+		roles[testAddresses[2]] = Role.AUDITOR;
+		for (uint8 i = 3; i < testAddresses.length; i++) {
 		    roles[testAddresses[i]] = Role.RESIDENT;
 		}
 	}
@@ -59,7 +63,7 @@ contract Voting {
 	    state = State.INITIAL;
 	}
 	
-	function fund() payable {
+	function () payable {
 	    require(roles[msg.sender] == Role.OWNER);
 	    require(state == State.INITIAL);
 	    state = State.FUNDED;
@@ -67,12 +71,13 @@ contract Voting {
 	}
 	
 	// TODO: add deadline
-	function startVoting(uint _threshold) {
+	function startVoting(uint _thresholdPercent) {
 	    require(roles[msg.sender] == Role.OWNER);
-	    require(_threshold > 0 && _threshold <= 100);
+	    require(_thresholdPercent > 0 && _thresholdPercent <= 100);
 	    require(state == State.FUNDED);
+	    threshold = (_thresholdPercent * (testAddresses.length - 2) / 100) + 1;
 	    state = State.OPEN;
-	    VotingOpened();
+	    VotingOpened(threshold);
 	}
 	
 	function approve() {
@@ -80,19 +85,38 @@ contract Voting {
 	    require(state == State.OPEN);
 	    approved[msg.sender] = true;
 	    numApproved += 1;
-	    Approved(msg.sender);
-	    if (numApproved > threshold * testAddresses.length) {
+	    Approved(msg.sender, numApproved);
+	    if (numApproved >= threshold) {
 	        state = State.APPROVED;
-	        VotingClosedSuccess();
+	        VotingClosedSuccess(numApproved);
 	    }
 	}
 	
-	function withdraw() {
+	function withdraw(uint amount) internal {
+	    msg.sender.transfer(amount);
+	    Withdrawn(msg.sender, amount);
+	}
+	
+	function withdrawFirst() {
 	    require(roles[msg.sender] == Role.COMPANY);
 	    require(state == State.APPROVED);
-	    msg.sender.transfer(this.balance);
+	    withdraw(this.balance * firtWithdrawalShare / 100);
+	    state = State.INSTALLIING;
+	}
+	
+	function auditConfirm() {
+	    require(roles[msg.sender] == Role.AUDITOR);
+	    require(state == State.INSTALLIING);
+	    state = State.AUDITED;
+	    Audited();
+	}
+	
+	function withdrawSecond() {
+	    require(roles[msg.sender] == Role.COMPANY);
+	    require(state == State.AUDITED);
+	    withdraw(this.balance);
 	    state = State.CLOSED;
-	    Withdrawn(msg.sender, this.balance);
+	    Closed();
 	}
     
 
