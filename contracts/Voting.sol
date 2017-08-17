@@ -154,13 +154,6 @@ contract Voting {
 	    state = State.CLOSED;
 	    Closed();
 	}
-	
-	
-	//// HELPERS ////
-	
-	function getState() constant returns (uint) {
-	    return uint(state);
-	}
     
 
 }
