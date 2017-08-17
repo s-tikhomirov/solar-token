@@ -154,6 +154,9 @@ contract Voting {
 	    state = State.CLOSED;
 	    Closed();
 	}
-    
+
+    function hasApproved(address addr) returns(bool) {
+       return approved[addr];
+    }
 
 }
