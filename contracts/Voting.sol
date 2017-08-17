@@ -3,7 +3,7 @@ pragma solidity ^0.4.13;
 contract Voting {
     
     enum Role { OWNER, COMPANY, RESIDENT, AUDITOR }
-    enum State { INITIAL, FUNDED, OPEN, APPROVED, INSTALLING, AUDITED, CLOSED, FAILED }
+    enum State { INITIAL, OPEN, APPROVED, INSTALLING, AUDITED, CLOSED, FAILED }
     
     mapping (address => Role) roles;
     State public state;
@@ -73,21 +73,21 @@ contract Voting {
 	
 	function () payable {
 	    require(roles[msg.sender] == Role.OWNER);
-	    require(state == State.INITIAL || state == State.FUNDED);
-	    state = State.FUNDED;
+	    require(state == State.INITIAL);
 	    Funded(msg.sender, msg.value);
 	}
 	
 	// owner can deposit and withdraw ether before voting starts
 	function withdrawBeforeVoting(uint _amount) {
-	    require(state == State.FUNDED);
+	    require(state == State.INITIAL);
 	    require(roles[msg.sender] == Role.OWNER);
 	    withdraw(_amount);
 	}
 	
 	function startVoting() {
 	    require(roles[msg.sender] == Role.OWNER);
-	    require(state == State.FUNDED);
+	    require(state == State.INITIAL);
+	    require(this.balance > 0);
 	    votingDeadline = now + defaultVotingDuration;
 	    threshold = (thresholdPercent * (testAddresses.length - numRoles + 1) / 100);
 	    state = State.OPEN;
