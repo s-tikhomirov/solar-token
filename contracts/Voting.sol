@@ -9,9 +9,9 @@ contract Voting {
     State public state;
     
     event Funded(address addr, uint amount);
-    event VotingOpened();
-    event Approved(address addr);
-    event VotingClosedSuccess();
+    event VotingOpened(uint threshold);
+    event Approved(address addr, uint total);
+    event VotingClosedSuccess(uint total);
     //event VotingClosedFailure();
     event Withdrawn(address addr, uint amount);
     
@@ -67,12 +67,13 @@ contract Voting {
 	}
 	
 	// TODO: add deadline
-	function startVoting(uint _threshold) {
+	function startVoting(uint _thresholdPercent) {
 	    require(roles[msg.sender] == Role.OWNER);
-	    require(_threshold > 0 && _threshold <= 100);
+	    require(_thresholdPercent > 0 && _thresholdPercent <= 100);
 	    require(state == State.FUNDED);
+	    threshold = (_thresholdPercent * (testAddresses.length - 2) / 100) + 1;
 	    state = State.OPEN;
-	    VotingOpened();
+	    VotingOpened(threshold);
 	}
 	
 	function approve() {
@@ -80,10 +81,10 @@ contract Voting {
 	    require(state == State.OPEN);
 	    approved[msg.sender] = true;
 	    numApproved += 1;
-	    Approved(msg.sender);
-	    if (numApproved > threshold * testAddresses.length) {
+	    Approved(msg.sender, numApproved);
+	    if (numApproved >= threshold) {
 	        state = State.APPROVED;
-	        VotingClosedSuccess();
+	        VotingClosedSuccess(numApproved);
 	    }
 	}
 	
