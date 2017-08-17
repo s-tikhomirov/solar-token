@@ -53,9 +53,11 @@ window.App = {
       }
 
       accounts = accs;
-        account = accounts[0];
-
+      account = accounts[0];
+        
         MetaCoin.deployed().then(function(instance) {
+            document.getElementById("contract_addr").innerHTML = instance.address;
+            
             console.log(instance);
             instance.state.call({from: account}).then(function(amount) {
                 console.log(amount);
