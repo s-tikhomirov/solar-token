@@ -64,7 +64,7 @@ window.App = {
     });
   },
 
-  sendCoin: function() {
+  transfer: function() {
     var self = this;
 
     var amount = parseInt(document.getElementById("amount").value);
@@ -75,7 +75,7 @@ window.App = {
     var meta;
     MetaCoin.deployed().then(function(instance) {
       meta = instance;
-      return meta.sendCoin(receiver, amount, {from: account});
+      return meta.transfer(receiver, amount, {from: account});
     }).then(function() {
       self.setStatus("Transaction complete!");
       self.refreshBalance();

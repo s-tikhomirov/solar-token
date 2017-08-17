@@ -39,9 +39,4 @@ contract MetaCoin is ERC223BasicToken {
 		return balances[_addr];
 	}
 	
-	function sendCoin(address _to, uint _value) {
-		transfer(_to, _value);
-	}
-	
-	
 }
