@@ -2,8 +2,8 @@ pragma solidity ^0.4.13;
 
 contract Voting {
     
-    enum Role { OWNER, COMPANY, RESIDENT}
-    enum State { INITIAL, FUNDED, OPEN, APPROVED, CLOSED }
+    enum Role { OWNER, COMPANY, RESIDENT, AUDITOR }
+    enum State { INITIAL, FUNDED, OPEN, APPROVED, INSTALLIING, AUDITED, CLOSED }
     
     mapping (address => Role) roles;
     State public state;
@@ -14,10 +14,13 @@ contract Voting {
     event VotingClosedSuccess(uint total);
     //event VotingClosedFailure();
     event Withdrawn(address addr, uint amount);
+    event Audited();
+    event Closed();
     
     mapping (address => bool) approved;
     uint numApproved;   // number of residents who approved
     uint threshold;     // required support in persent (1 to 100)
+    uint firtWithdrawalShare = 50;     // share that company withdraws before installation
 
 	// Addresses generated from seed.txt
     address[] private testAddresses;
@@ -45,10 +48,11 @@ contract Voting {
     
 	function assignRoles() internal {
 	    require(msg.sender == testAddresses[0]);
-	    require(testAddresses.length > 2);
+	    require(testAddresses.length > 3);
 		roles[testAddresses[0]] = Role.OWNER;
 		roles[testAddresses[1]] = Role.COMPANY;
-		for (uint8 i = 2; i < testAddresses.length; i++) {
+		roles[testAddresses[2]] = Role.AUDITOR;
+		for (uint8 i = 3; i < testAddresses.length; i++) {
 		    roles[testAddresses[i]] = Role.RESIDENT;
 		}
 	}
@@ -59,7 +63,7 @@ contract Voting {
 	    state = State.INITIAL;
 	}
 	
-	function fund() payable {
+	function () payable {
 	    require(roles[msg.sender] == Role.OWNER);
 	    require(state == State.INITIAL);
 	    state = State.FUNDED;
@@ -88,12 +92,31 @@ contract Voting {
 	    }
 	}
 	
-	function withdraw() {
+	function withdraw(uint amount) internal {
+	    msg.sender.transfer(amount);
+	    Withdrawn(msg.sender, amount);
+	}
+	
+	function withdrawFirst() {
 	    require(roles[msg.sender] == Role.COMPANY);
 	    require(state == State.APPROVED);
-	    msg.sender.transfer(this.balance);
+	    withdraw(this.balance * firtWithdrawalShare / 100);
+	    state = State.INSTALLIING;
+	}
+	
+	function auditConfirm() {
+	    require(roles[msg.sender] == Role.AUDITOR);
+	    require(state == State.INSTALLIING);
+	    state = State.AUDITED;
+	    Audited();
+	}
+	
+	function withdrawSecond() {
+	    require(roles[msg.sender] == Role.COMPANY);
+	    require(state == State.AUDITED);
+	    withdraw(this.balance);
 	    state = State.CLOSED;
-	    Withdrawn(msg.sender, this.balance);
+	    Closed();
 	}
     
 
