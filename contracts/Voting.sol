@@ -24,11 +24,11 @@ contract Voting {
     uint numApproved;   // number of residents who approved
     uint threshold;     // required support in persent (1 to 100)
     uint firstWithdrawalShare = 50;     // share that company withdraws before installation
-    uint thresholdPercent = 51;         // required approval
+    uint thresholdPercent = 70;         // required approval
     uint votingDeadline;
-    uint defaultVotingDuration = 1 minutes;
+    uint defaultVotingDuration = 1 years;
     uint installationDeadline;
-    uint defaultInstallationDuration = 1 minutes;
+    uint defaultInstallationDuration = 1 years;
 
 	// Addresses generated from seed.txt
     address[] private testAddresses;

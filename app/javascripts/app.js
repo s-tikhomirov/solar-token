@@ -13,17 +13,26 @@ var ROLE_COMPANY = 1;
 var ROLE_AUDITOR = 2;
 var ROLE_RESIDENT = 3;
 var ids = {
-    "0x0120fe6e3aa2c936e6d2f88062b266c46c408f98": {"role": ROLE_BUILDING_OWNER, "name": "Name 1", "approved": false},
-    "0xa8fc189694dc8ba03c027d470b77c09b7d13471e": {"role": ROLE_COMPANY, "name": "Name 2", "approved": false},
-    "0xdbf73038f3e4a5d27e38004c36dc6ce82165794f": {"role": ROLE_AUDITOR, "name": "Name 3", "approved": false},
-    "0x692b50dc6d0021a73ec50fcd3ad78d3c121be360": {"role": ROLE_RESIDENT, "name": "Name 4", "approved": false},
-    "0xc396dfc357c849c5e4fbbe1f130eb469675af895": {"role": ROLE_RESIDENT, "name": "Name 5", "approved": false},
-    "0x07efc80760137f58a43e44a9bede15da8053d730": {"role": ROLE_RESIDENT, "name": "Name 6", "approved": false},
-    "0xfe8699b505180f51966e56f118e66544dea311bd": {"role": ROLE_RESIDENT, "name": "Name 7", "approved": false},
-    "0x276ae02aa2710bebc571f3647d64d9b440f998d6": {"role": ROLE_RESIDENT, "name": "Name 8", "approved": false},
-    "0x43882f2be5ccf7ba1cf848e202683385d5fb93bb": {"role": ROLE_RESIDENT, "name": "Name 9", "approved": false},
-    "0x76c780eb591481c086e1a0574b16c4f52e5aa352": {"role": ROLE_RESIDENT, "name": "Name 10", "approved": false},
+    "0x0120fe6e3aa2c936e6d2f88062b266c46c408f98": {"role": ROLE_BUILDING_OWNER, "name": "Hans", "approved": false},
+    "0xa8fc189694dc8ba03c027d470b77c09b7d13471e": {"role": ROLE_COMPANY, "name": "Erik", "approved": false},
+    "0xdbf73038f3e4a5d27e38004c36dc6ce82165794f": {"role": ROLE_AUDITOR, "name": "Poul", "approved": false},
+    "0x692b50dc6d0021a73ec50fcd3ad78d3c121be360": {"role": ROLE_RESIDENT, "name": "Alice", "approved": false},
+    "0xc396dfc357c849c5e4fbbe1f130eb469675af895": {"role": ROLE_RESIDENT, "name": "Bob", "approved": false},
+    "0x07efc80760137f58a43e44a9bede15da8053d730": {"role": ROLE_RESIDENT, "name": "Carol", "approved": false},
+    "0xfe8699b505180f51966e56f118e66544dea311bd": {"role": ROLE_RESIDENT, "name": "David", "approved": false},
+    "0x276ae02aa2710bebc571f3647d64d9b440f998d6": {"role": ROLE_RESIDENT, "name": "Eve", "approved": false},
+    "0x43882f2be5ccf7ba1cf848e202683385d5fb93bb": {"role": ROLE_RESIDENT, "name": "Sergei", "approved": false},
+    "0x76c780eb591481c086e1a0574b16c4f52e5aa352": {"role": ROLE_RESIDENT, "name": "Anders", "approved": false},
 };
+
+var STATE_INITIAL = 0;
+var STATE_OPEN = 1;
+var STATE_APPROVED = 2;
+var STATE_INSTALLING = 3;
+var STATE_AUDITED = 4;
+var STATE_CLOSED = 5;
+var STATE_FAILED = 6;
+
 
 // MetaCoin is our usable abstraction, which we'll use through the code below.
 var MetaCoin = contract(metacoin_artifacts);
@@ -33,6 +42,7 @@ var MetaCoin = contract(metacoin_artifacts);
 // For application bootstrapping, check out window.addEventListener below.
 var accounts;
 var account;
+var state = -1;
 
 window.App = {
   start: function() {
@@ -58,7 +68,7 @@ window.App = {
 
         MetaCoin.defaults({
             from: account,
-            gas: 4712388,
+            gas: 4512388,
             gasPrice: 1000000000000
         });
 
@@ -101,6 +111,11 @@ window.App = {
                     ids["0x76c780eb591481c086e1a0574b16c4f52e5aa352"].approved = value;
                     self.updateUI();
                 });
+            instance.state.call({from: account}).then(function(value) {
+                state = value.toNumber();
+                console.log("STATE " + state);
+                self.updateUI();
+            });
         });
       //self.refreshBalance();
     });
@@ -120,13 +135,11 @@ window.App = {
         residents_table.appendChild(tr);
         
         for(var id in ids) {
-            console.log(id);
-        
             if(ids[id].role == ROLE_RESIDENT) {
                 var tr = document.createElement("tr");
                 var td_name = document.createElement("td");
                 var td_approved = document.createElement("td");
-                var name = ids[id].name + " (" + id + ")";
+                var name = ids[id].name + " (" + id.substring(0,10) + ")";
                 td_name.appendChild(document.createTextNode(name));
 
 
@@ -144,7 +157,6 @@ window.App = {
                 tr.appendChild(td_name);
                 tr.appendChild(td_approved);
                 residents_table.appendChild(tr);
-                console.log(tr);
             }
         }
         
@@ -154,12 +166,21 @@ window.App = {
           var company_area = document.getElementById("company_area");
           var residents_area = document.getElementById("residents_area");
           building_owner_area.classList.add("hidden");
+          document.getElementById("start_compaign_btn").disabled = true;
+          document.getElementById("withdraw_btn").disabled = true;
           company_area.classList.add("hidden");
           residents_area.classList.add("hidden");
           if(ids[account].role === ROLE_BUILDING_OWNER) {
               building_owner_area.classList.remove("hidden");
+              if(state == STATE_INITIAL) {
+                  document.getElementById("start_compaign_btn").disabled = false;
+              }
           } else if(ids[account].role === ROLE_COMPANY) {
               company_area.classList.remove("hidden");
+              
+              if(state == STATE_APPROVED) {
+                  document.getElementById("withdraw_btn").disabled = false;
+              }
           } else if(ids[account].role === ROLE_RESIDENT) {
               residents_area.classList.remove("hidden");
           }
