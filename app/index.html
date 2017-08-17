@@ -9,16 +9,38 @@
 <body>
   <h1>Solar Token</h1>
   <h2>Ethereum token for renewable enegry investment</h2>
-  <h3>You have <span class="black"><span id="balance"></span> SOL</span></h3>
 
-  <br>
-  <h1>Send tokens</h1>
-  <br><label for="amount">Amount:</label><input type="text" id="amount" placeholder="e.g., 95"></input>
-  <br><label for="receiver">To Address:</label><input type="text" id="receiver" placeholder="e.g., 0x93e66d9baea28c17d9fc393b53e3fbdd76899dae"></input>
-  <br><br><button id="send" onclick="App.transfer()">Send</button>
-  <br><br>
-  <span id="status"></span>
-  <br>
-  <span class="hint"><strong>Hint:</strong> open the browser developer console to view any errors and warnings.</span>
+  <div id="building_owner_area" class="hidden">
+  <h1>Building Owner</h1>
+  <h3>You have <span class="black"><span id="balance"></span> SOL</span></h3>
+  <button id="start_compaign_btn" onclick="App.startCampaign()">Start Campaign</button>
+  </div>
+
+  <div id="residents_area" class="hidden">
+    <h1>Residents</h1>
+    <table>
+      <tr>
+        <th>Name</th>
+        <th>Shares</th> 
+        <th>Approved</th>
+      </tr>
+    </table>
+  </div>
+
+  <div id="company_area" class="hidden">
+    <h1>Solar Panel Company</h1>
+    <h3>You have <span class="black"><span id="balance"></span> SOL</span></h3>
+    <button id="withdraw_btn" onclick="App.withdraw()">Withdraw</button>
+  </div>
+
+  <!-- <br> -->
+  <!-- <h1>Send tokens</h1> -->
+  <!-- <br><label for="amount">Amount:</label><input type="text" id="amount" placeholder="e.g., 95"></input> -->
+  <!-- <br><label for="receiver">To Address:</label><input type="text" id="receiver" placeholder="e.g., 0x93e66d9baea28c17d9fc393b53e3fbdd76899dae"></input> -->
+  <!-- <br><br><button id="send" onclick="App.transfer()">Send</button> -->
+  <!-- <br><br> -->
+  <!-- <span id="status"></span> -->
+  <!-- <br> -->
+  <!-- <span class="hint"><strong>Hint:</strong> open the browser developer console to view any errors and warnings.</span> -->
 </body>
 </html>

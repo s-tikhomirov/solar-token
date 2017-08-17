@@ -50,3 +50,13 @@ h3 {
 .hint {
   color: #666;
 }
+
+#building_owner_area {
+    padding-bottom: 5px;
+    border-bottom: 1px solid black;
+    border-top: 1px solid black;
+}
+
+.hidden {
+    display: none;
+}

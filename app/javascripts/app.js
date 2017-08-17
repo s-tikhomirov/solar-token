@@ -8,6 +8,22 @@ import { default as contract } from 'truffle-contract'
 // Import our contract artifacts and turn them into usable abstractions.
 import metacoin_artifacts from '../../build/contracts/MetaCoin.json'
 
+var ROLE_BUILDING_OWNER = 0;
+var ROLE_COMPANY = 1;
+var ROLE_RESIDENT = 2;
+var ids = {
+    "0x0120fe6e3aa2c936e6d2f88062b266c46c408f98": {"role": ROLE_BUILDING_OWNER, "name": "Name 1"},
+    "0xa8fc189694dc8ba03c027d470b77c09b7d13471e": {"role": ROLE_COMPANY, "name": "Name 2"},
+    "0xdbf73038f3e4a5d27e38004c36dc6ce82165794f": {"role": ROLE_RESIDENT, "name": "Name 3"},
+    "0x692b50dc6d0021a73ec50fcd3ad78d3c121be360": {"role": ROLE_RESIDENT, "name": "Name 4"},
+    "0xc396dfc357c849c5e4fbbe1f130eb469675af895": {"role": ROLE_RESIDENT, "name": "Name 5"},
+    "0x07efc80760137f58a43e44a9bede15da8053d730": {"role": ROLE_RESIDENT, "name": "Name 6"},
+    "0xfe8699b505180f51966e56f118e66544dea311bd": {"role": ROLE_RESIDENT, "name": "Name 7"},
+    "0x276ae02aa2710bebc571f3647d64d9b440f998d6": {"role": ROLE_RESIDENT, "name": "Name 8"},
+    "0x43882f2be5ccf7ba1cf848e202683385d5fb93bb": {"role": ROLE_RESIDENT, "name": "Name 9"},
+    "0x76c780eb591481c086e1a0574b16c4f52e5aa352": {"role": ROLE_RESIDENT, "name": "Name 10"},
+};
+
 // MetaCoin is our usable abstraction, which we'll use through the code below.
 var MetaCoin = contract(metacoin_artifacts);
 
@@ -39,8 +55,46 @@ window.App = {
       accounts = accs;
       account = accounts[0];
 
+      self.updateUI();
       self.refreshBalance();
     });
+  },
+
+  updateUI: function() {
+      // Get account type
+      if(ids[account] !== null) {
+          var building_owner_area = document.getElementById("building_owner_area");
+          var company_area = document.getElementById("company_area");
+          var residents_area = document.getElementById("residents_area");
+          building_owner_area.classList.add("hidden");
+          company_area.classList.add("hidden");
+          residents_area.classList.add("hidden");
+          if(ids[account].role === ROLE_BUILDING_OWNER) {
+              building_owner_area.classList.remove("hidden");
+          } else if(ids[account].role === ROLE_COMPANY) {
+              company_area.classList.remove("hidden");
+          } else if(ids[account].role === ROLE_RESIDENT) {
+              residents_area.classList.remove("hidden");
+          }
+      }
+  },
+
+    startCampaign: function() {
+        var start_campaign_btn = document.getElementById("start_compaign_btn");
+        start_campaign_btn.disabled = true;
+        
+      var meta;
+      MetaCoin.deployed().then(function(instance) {
+          meta = instance;
+          return meta.startVoting({from: account})
+      }).then(function() {
+          start_campaign_btn.value = "Campaign started!";
+          //self.refreshBalance();
+      }).catch(function(e) {
+          console.log(e);
+          start_campaign_btn.value = "Campaign started!";
+          //self.setStatus("Error sending coin; see log.");
+      });
   },
 
   setStatus: function(message) {
