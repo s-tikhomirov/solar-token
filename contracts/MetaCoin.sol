@@ -16,17 +16,18 @@ contract MetaCoin is ERC223BasicToken {
     uint private testBalance = 100;
     
     function assignTestAddresses() internal {
-		testAddresses[0] = 0x00b35291d1844ceecf24ccb64d9d89df94c43393;
-		testAddresses[1] = 0xf14ef8908770ee9edb567a8e30dfe7f35e0f9665;
-		testAddresses[2] = 0x008b12c3bb5e83a99308fed2047777eca5eaac66;
-		testAddresses[3] = 0x0d06d3207f4909ce883ab331273848f8e15a0f23;
-		testAddresses[4] = 0xd0f38630e43b6f1d04944767b8ac0fd266b116d4;
-		testAddresses[5] = 0x231fd5abf045fad239c115c36c20f9ec1e8d3cca;
-		testAddresses[6] = 0x6cf26481d38988e3dbd7ef06834d56af8970c958;
-		testAddresses[7] = 0xeef7e160a0d5313916d460ce86f90dc3530de0f0;
-		testAddresses[8] = 0xd9ea475bc4f73307e9774c8ce0315b0e435d0490;
-		testAddresses[9] = 0xecf3c1eb8cf920bd79a96a3a3f0c7cc689dd6be0;
+		testAddresses[0] = 0x0120fe6e3aa2c936e6d2f88062b266c46c408f98;
+		testAddresses[1] = 0xa8fc189694dc8ba03c027d470b77c09b7d13471e;
+		testAddresses[2] = 0xdbf73038f3e4a5d27e38004c36dc6ce82165794f;
+		testAddresses[3] = 0x692b50dc6d0021a73ec50fcd3ad78d3c121be360;
+		testAddresses[4] = 0xc396dfc357c849c5e4fbbe1f130eb469675af895;
+		testAddresses[5] = 0x07efc80760137f58a43e44a9bede15da8053d730;
+		testAddresses[6] = 0xfe8699b505180f51966e56f118e66544dea311bd;
+		testAddresses[7] = 0x276ae02aa2710bebc571f3647d64d9b440f998d6;
+		testAddresses[8] = 0x43882f2be5ccf7ba1cf848e202683385d5fb93bb;
+		testAddresses[9] = 0x76c780eb591481c086e1a0574b16c4f52e5aa352;
     }
+    
 
 	function assignTestCoins(uint _testBalance) internal {
 		for (uint8 i = 0; i < testAddresses.length; i++) {
