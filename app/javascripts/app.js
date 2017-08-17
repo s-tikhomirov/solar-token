@@ -127,10 +127,8 @@ window.App = {
         var start_campaign_btn = document.getElementById("start_compaign_btn");
         start_campaign_btn.disabled = true;
         
-      var meta;
       MetaCoin.deployed().then(function(instance) {
-          meta = instance;
-          return meta.startVoting({from: account})
+          return instance.startVoting({from: account})
       }).then(function() {
           start_campaign_btn.value = "Campaign started!";
           //self.updateUI();
