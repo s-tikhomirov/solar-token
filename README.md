@@ -1,6 +1,6 @@
 # Solar token
 
-This project was created during the hackathon at the [Blockchain summer school in Copenhagen](http://blockchainschool.eu/) on 16-17 August 2017. The idea was to create a P2P marketplace for energy trading.
+This project was created during the hackathon at the [Blockchain summer school in Copenhagen](http://blockchainschool.eu/) on 16-17 August and presented on 18 August 2017 ([video](https://www.youtube.com/watch?v=ZDm7V16NNpo)). The idea was to create a P2P marketplace for energy trading.
 
 This repository only implements a simple demo, where residents of a building can vote on whether to approve the installation of the solar panel on their roof. The scenario of the demo is the following:
 
